@@ -61,5 +61,39 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ✅ ADDING THE /SIMULATE ENDPOINT HERE ✅
+@app.route('/simulate', methods=['POST'])
+def simulate():
+    try:
+        params = request.get_json()
+
+        # Validate input
+        if not params:
+            return jsonify({"error": "Missing request data"}), 400
+
+        # Adjust risk factors based on user input
+        adjusted_risk = [
+            {
+                "x": d["x"] * params.get("x_factor", 1),
+                "y": d["y"] * params.get("y_factor", 1),
+                "cost": d["cost"] * params.get("cost_factor", 1)
+            }
+            for d in risk_data
+        ]
+
+        # Adjust forecast values based on user input
+        adjusted_forecast = [
+            {
+                "ds": d["ds"],
+                "yhat": d["yhat"] * params.get("forecast_factor", 1)
+            }
+            for d in forecast_data
+        ]
+
+        return jsonify({"adjusted_risk": adjusted_risk, "adjusted_forecast": adjusted_forecast})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
